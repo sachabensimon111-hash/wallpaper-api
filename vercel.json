@@ -1,11 +1,7 @@
 {
-    "version": 2,
-    "env": {
-          "ANTHROPIC_API_KEY": "@anthropic-api-key"
-    },
-    "functions": {
-          "app/api/wallpaper/route.js": {
-                  "maxDuration": 30
-          }
+  "functions": {
+    "app/api/wallpaper/route.js": {
+      "maxDuration": 30
     }
+  }
 }
