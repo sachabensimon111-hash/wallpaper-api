@@ -52,20 +52,21 @@ export default function Home() {
         style={{ width: '240px', borderRadius: '16px', boxShadow: '0 30px 80px rgba(0,0,0,0.6)' }}
       />
 
+      {/* Catégories avec bouton Installer */}
       <div style={{ maxWidth: '640px', width: '100%' }}>
         <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#b8956a', marginBottom: '20px', textAlign: 'center' }}>
-          → Choisis ta catégorie
+          → Choisis ta catégorie et installe en 1 tap
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
           {CATEGORIES.map((cat) => (
             <a
               key={cat.id}
-              href={`/api/wallpaper?category=${cat.id}`}
+              href={`/api/shortcut?category=${cat.id}`}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '8px 16px',
+                padding: '10px 18px',
                 borderRadius: '24px',
                 border: '1px solid rgba(184,149,106,0.3)',
                 background: 'rgba(255,255,255,0.04)',
@@ -79,13 +80,17 @@ export default function Home() {
             </a>
           ))}
         </div>
+        <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.75rem', opacity: 0.4 }}>
+          Ouvre depuis ton iPhone → le raccourci s'installe automatiquement
+        </p>
       </div>
 
-      <div style={{ maxWidth: '480px', width: '100%', background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '28px', border: '1px solid rgba(184,149,106,0.2)' }}>
-        <p style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#b8956a', marginBottom: '16px' }}>
-          → Automatiser sur iPhone
-        </p>
-        <ol style={{ fontSize: '0.9rem', lineHeight: '2', opacity: 0.7, paddingLeft: '20px' }}>
+      {/* Instructions manuelles */}
+      <details style={{ maxWidth: '480px', width: '100%', background: 'rgba(255,255,255,0.04)', borderRadius: '16px', padding: '28px', border: '1px solid rgba(184,149,106,0.2)' }}>
+        <summary style={{ fontSize: '0.75rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#b8956a', cursor: 'pointer', listStyle: 'none' }}>
+          → Installation manuelle (optionnel)
+        </summary>
+        <ol style={{ fontSize: '0.9rem', lineHeight: '2', opacity: 0.7, paddingLeft: '20px', marginTop: '16px' }}>
           <li>Ouvre l'app <strong>Raccourcis</strong></li>
           <li>Nouvelle automatisation → <strong>Chaque jour à 7h00</strong></li>
           <li>Ajouter action : <strong>Obtenir le contenu d'URL</strong></li>
@@ -93,7 +98,7 @@ export default function Home() {
           <li>Ajouter action : <strong>Définir le fond d'écran</strong></li>
           <li>Activer et c'est tout ✓</li>
         </ol>
-      </div>
+      </details>
 
       <p style={{ opacity: 0.25, fontSize: '0.75rem' }}>
         Palettes : ?palette=0 à 4 · Catégories : ?category=stoicisme, zen, ambition...
