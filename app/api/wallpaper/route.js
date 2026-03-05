@@ -3,13 +3,35 @@ import Anthropic from '@anthropic-ai/sdk'
 
 export const runtime = 'edge'
 
-// Palettes
 const PALETTES = [
   { from: '#0c0c14', to: '#1a1228', accent: '#b8956a', text: '#f5efe6' },
   { from: '#0d1b12', to: '#0a2a1a', accent: '#7aab7a', text: '#eaf5ea' },
   { from: '#1a0e0e', to: '#2a1218', accent: '#c47a6a', text: '#f5ece9' },
   { from: '#0d1220', to: '#0a1a30', accent: '#6a9ab8', text: '#e9f0f5' },
   { from: '#1a1610', to: '#2a2216', accent: '#c4aa6a', text: '#f5f0e6' },
+]
+
+const CATEGORIES = [
+  { id: 'stoicisme', label: 'Stoïcisme', prompt: 'inspirée du stoïcisme (discipline, acceptation, force intérieure)' },
+  { id: 'zen', label: 'Zen', prompt: 'inspirée de la philosophie zen (pleine conscience, instant présent, paix)' },
+  { id: 'ambition', label: 'Ambition', prompt: 'sur l\'ambition (rêver grand, viser haut, conquérir)' },
+  { id: 'resilience', label: 'Résilience', prompt: 'sur la résilience (rebondir, surmonter, ne jamais abandonner)' },
+  { id: 'gratitude', label: 'Gratitude', prompt: 'sur la gratitude (apprécier, savourer, remercier la vie)' },
+  { id: 'confiance', label: 'Confiance en soi', prompt: 'sur la confiance en soi (croire en ses capacités, oser)' },
+  { id: 'discipline', label: 'Discipline', prompt: 'sur la discipline (habitudes, constance, effort quotidien)' },
+  { id: 'creativite', label: 'Créativité', prompt: 'sur la créativité (imagination, art, penser autrement)' },
+  { id: 'amour', label: 'Amour', prompt: 'sur l\'amour (relations, bienveillance, connexion humaine)' },
+  { id: 'sagesse', label: 'Sagesse', prompt: 'de sagesse (leçons de vie, maturité, perspective)' },
+  { id: 'courage', label: 'Courage', prompt: 'sur le courage (affronter ses peurs, agir malgré le doute)' },
+  { id: 'liberte', label: 'Liberté', prompt: 'sur la liberté (indépendance, vivre selon ses termes)' },
+  { id: 'patience', label: 'Patience', prompt: 'sur la patience (le temps comme allié, cultiver la lenteur)' },
+  { id: 'leadership', label: 'Leadership', prompt: 'sur le leadership (inspirer, guider, montrer l\'exemple)' },
+  { id: 'minimalisme', label: 'Minimalisme', prompt: 'sur le minimalisme (moins c\'est plus, l\'essentiel suffit)' },
+  { id: 'aventure', label: 'Aventure', prompt: 'sur l\'aventure (explorer, voyager, sortir de sa zone)' },
+  { id: 'sport', label: 'Sport', prompt: 'sur le sport et le dépassement (performance, endurance, mental d\'athlète)' },
+  { id: 'entrepreneuriat', label: 'Entrepreneuriat', prompt: 'sur l\'entrepreneuriat (construire, innover, prendre des risques)' },
+  { id: 'serenite', label: 'Sérénité', prompt: 'sur la sérénité (calme intérieur, lâcher-prise, harmonie)' },
+  { id: 'humour', label: 'Humour', prompt: 'avec humour et légèreté (rire de la vie, dédramatiser, joie)' },
 ]
 
 function getDayOfYear(date) {
@@ -24,30 +46,48 @@ function formatDate(date) {
   return `${DAYS[date.getDay()]} ${date.getDate()} ${MONTHS[date.getMonth()]}`
 }
 
-async function generateQuote(dayNum) {
+async function generateQuote(dayNum, category) {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const catPrompt = category ? category.prompt : 'profonde et universelle'
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 200,
-    messages: [{ role: 'user', content: `Tu es un générateur de phrases de motivation profondes et élégantes.\n\nGénère UNE SEULE phrase de motivation originale pour le jour ${dayNum} de l'année.\nLa phrase doit :\n- Être courte (max 18 mots)\n- Être poétique, puissante, mémorable\n- Inspirer l'action ou la sérénité\n- Être en français\n- Être originale (pas les phrases clichées habituelles)\n\nRéponds UNIQUEMENT en JSON valide, sans markdown, sans backticks :\n{"quote":"la phrase ici","source":"auteur ou concept (ex: Sagesse stoïcienne, Marc Aurèle, Proverbe zen)"}` }]
+    messages: [{ role: 'user', content: `Tu es un générateur de phrases de motivation profondes et élégantes.
+
+Génère UNE SEULE phrase de motivation originale ${catPrompt} pour le jour ${dayNum} de l'année.
+La phrase doit :
+- Être courte (max 18 mots)
+- Être poétique, puissante, mémorable
+- Inspirer l'action ou la sérénité
+- Être en français
+- Être originale (pas les phrases clichées habituelles)
+
+Réponds UNIQUEMENT en JSON valide, sans markdown, sans backticks :
+{"quote":"la phrase ici","source":"auteur ou concept (ex: Sagesse stoïcienne, Marc Aurèle, Proverbe zen)"}` }]
   })
   return JSON.parse(response.content[0].text.trim())
 }
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
-  const paletteIndex = Math.min(parseInt(searchParams.get('palette') || '0'), 4)
+  const paletteIndex = Math.min(Math.max(parseInt(searchParams.get('palette') || '0'), 0), 4)
   const palette = PALETTES[paletteIndex]
+
+  const categoryParam = searchParams.get('category') || ''
+  const category = CATEGORIES.find(c => c.id === categoryParam) || null
+
   const now = new Date()
   const dayNum = getDayOfYear(now)
   const dateStr = formatDate(now)
 
   let quoteData
   try {
-    quoteData = await generateQuote(dayNum)
+    quoteData = await generateQuote(dayNum, category)
   } catch (err) {
     quoteData = { quote: 'Chaque matin est une nouvelle page blanche.', source: 'Motiv Daily' }
   }
+
+  const categoryLabel = category ? category.label : ''
 
   return new ImageResponse(
     (
@@ -55,6 +95,7 @@ export async function GET(request) {
         <div style={{ position: 'absolute', top: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px' }}>
           <div style={{ width: '1px', height: '80px', background: `linear-gradient(to bottom, transparent, ${palette.accent})`, marginBottom: '28px' }} />
           <div style={{ fontSize: '28px', fontWeight: '300', letterSpacing: '0.2em', textTransform: 'uppercase', color: palette.accent, fontFamily: 'sans-serif' }}>{dateStr}</div>
+          {categoryLabel ? <div style={{ fontSize: '22px', fontWeight: '300', letterSpacing: '0.15em', textTransform: 'uppercase', color: palette.accent, opacity: 0.5, fontFamily: 'sans-serif', marginTop: '16px' }}>{categoryLabel}</div> : null}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0', maxWidth: '860px', textAlign: 'center' }}>
           <div style={{ fontSize: '140px', lineHeight: '0.4', color: palette.accent, opacity: 0.15, fontFamily: 'serif', marginBottom: '40px', fontStyle: 'italic' }}>"</div>
